@@ -3,6 +3,3 @@ pandas
 numpy
 matplotlib
 openpyxl
-dataclasses
-typing
-io
