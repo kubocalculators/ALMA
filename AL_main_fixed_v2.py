@@ -102,14 +102,14 @@ def load_weather(uploaded) -> pd.DataFrame:
 
 # ---------- Main Page ---------- #
 
-st.title("Grow Lights - Average DLI (Excel-faithful)")
+st.title("Grow Lights - Average DLI")
 
-system = st.radio("Choose system", ["LED", "Hybrid"], index=0, key="system", on_change=lambda: st.session_state.pop("results", None))
+system = st.radio("Choose system", ["LED", "Hybrid (LED + HPS)"], index=0, key="system", on_change=lambda: st.session_state.pop("results", None))
 
 with st.form("controls", clear_on_submit=False):
-    uploaded = st.file_uploader("Upload weather Excel (AlMA workbook or ksgclimatedata export)", type=["xlsx"])
+    uploaded = st.file_uploader("Upload weather Excel (https://ksgclimatedata.streamlit.app/)", type=["xlsx"])
 
-    st.header("Common parameters (match Excel 'AL calc')")
+    st.header("Crop / Project Parameters")
     start = st.number_input("Start hour", min_value=0, max_value=23, value=5, step=1)
     photoperiod = st.number_input("Photoperiod (h)", min_value=1, max_value=24, value=16, step=1)
 
@@ -121,18 +121,18 @@ with st.form("controls", clear_on_submit=False):
     al_off_end_month = st.number_input("AL off end month", min_value=0, max_value=12, value=0, step=1)
 
 
-    st.header("Cover & screens (compute 'Radiation after screen')")
+    st.header("Greenhouse Cover & Screen Specifications")
     use_screen_model = st.checkbox(
-        "Compute Radiation after screen from global radiation (I_global)",
-        value=False,
+        "Compute Radiation after screen from direct solar radiation",
+        value=True,
         help="If checked, the app will compute 'Isun' using the roof + screen settings below. If unchecked, it will use the 'Isun' column as provided by the file."
     )
 
-    trans_roof = st.number_input("Roof transmission (trans_roof)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
-    u_roof = st.number_input("U roof (u_roof)", min_value=0.0, value=6.9, step=0.1)
-    u_leak = st.number_input("U leak (u_leak)", min_value=0.0, value=0.7, step=0.1)
-    Tout_influence = st.number_input("Tout influence threshold (Tout_influence)", value=-1.0, step=0.5)
-    nr_screens = st.number_input("Number of screens (nr_screens)", min_value=0, max_value=2, value=2, step=1)
+    trans_roof = st.number_input("Roof transmission (W/m²/K)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
+    u_roof = st.number_input("U roof (W/m²/k)", min_value=0.0, value=6.9, step=0.1)
+    u_leak = st.number_input("U leak (W/m²/K)", min_value=0.0, value=0.7, step=0.1)
+    nr_screens = st.number_input("Number of screens", min_value=0, max_value=2, value=2, step=1)
+    Tout_influence = st.number_input("Outside Temp Threshold to close Screen 2 (degC)", value=-1.0, step=0.5)
 
     st.subheader("Screen 1")
     screen_1_shading_pct = st.number_input("Screen 1 shading (%)", min_value=0.0, max_value=100.0, value=13.0, step=1.0)
