@@ -115,7 +115,7 @@ def load_weather(uploaded) -> pd.DataFrame:
         return format_weather_from_ksgclimatedata(raw)
 
 # ---------- Sidebar for Info ---------- #
-
+st.set_page_config(layout="centered")
 st.sidebar.title("Navigation")
 
 page = st.sidebar.radio("Go to:", ["Calculator","Info"], index=0)
