@@ -119,6 +119,14 @@ def load_weather(uploaded) -> pd.DataFrame:
 st.sidebar.title("Navigation")
 
 page = st.sidebar.radio("Go to:", ["Calculator","Info"], index=0)
+with st.sidebar:
+    with open("Productsheets.pdf", "rb") as f:
+        st.download_button(
+            "Open Crop Data PDF",
+            f,
+            file_name="Productsheets.pdf",
+            mime="application/pdf"
+        )
 
 if page == "Calculator":
     # ---------- Main Page ---------- #
@@ -130,15 +138,7 @@ if page == "Calculator":
     with st.form("controls", clear_on_submit=False):
         uploaded = st.file_uploader("Upload weather Excel (https://ksgclimatedata.streamlit.app/)", type=["xlsx"])
 
-        st.header("Crop / Project Parameters")
-
-        with open("Productsheets.pdf", "rb") as f:
-            st.download_button(
-                "Open Crop Data PDF",
-                f,
-                file_name="Productsheets.pdf",
-                mime="application/pdf"
-            )    
+        st.header("Crop / Project Parameters") 
 
         start = st.number_input("Start hour", min_value=0, max_value=23, value=5, step=1)
         photoperiod = st.number_input("Photoperiod (h)", min_value=1, max_value=24, value=16, step=1)
