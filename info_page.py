@@ -11,11 +11,11 @@ def render():
     st.markdown("""
 
     From the hourly climate data, this calculator makes hourly decisions of whether to put the lights on or off and if it is a hybrid system, whether to use the LED or HPS lights first.  \n
-    **See below how the input variables contribute to these hourly decisions.**
+    **Hover over the image below and click the top right to expand.**
 
     """)
 
-    st.image("HourlyDecisionChart_AlMA.png")
+    st.image("HourlyDecisionChart_AlMA.png", width=2000)
 
     st.subheader("Calculating Radiation at the Crop Level")
 
@@ -75,4 +75,5 @@ def render():
     The number of hours required to meet the target DLI is compared to the number of hours AL is allowed to be one by Step 1 Checkpoint. The lower threshold is taken as the maximum
     and a cumulative counter disallows artificial lighting when the daily maximum has been reached.
     """)
+
 
