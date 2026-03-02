@@ -1,3 +1,4 @@
+
 import io
 import pandas as pd
 import streamlit as st
@@ -115,7 +116,9 @@ def load_weather(uploaded) -> pd.DataFrame:
         return format_weather_from_ksgclimatedata(raw)
 
 # ---------- Sidebar for Info ---------- #
+
 st.set_page_config(layout="centered")
+
 st.sidebar.title("Navigation")
 
 page = st.sidebar.radio("Go to:", ["Calculator","Info"], index=0)
@@ -270,61 +273,61 @@ if page == "Calculator":
         except Exception as e:
             st.session_state["error"] = str(e)
 
+        # ---------- Display Output ---------- #
+
+        if "error" in st.session_state:
+            st.error(f"Something went wrong: {st.session_state['error']}")
+
+        if "results" in st.session_state:
+            res = st.session_state["results"]
+
+            st.pyplot(res["fig1"],  use_container_width=True)
+            buf1 = io.BytesIO()
+            res["fig1"].savefig(buf1, format="png", dpi=300, bbox_inches="tight")
+            st.download_button(
+                "Download chart (PNG)",
+                data=buf1.getvalue(),
+                file_name="AverageDLI.png",
+                mime="image/png",
+                key="png"
+            )
+
+            st.pyplot(res["fig2"],  use_container_width=True)
+            buf2 = io.BytesIO()
+            res["fig2"].savefig(buf2, format="png", dpi=300, bbox_inches="tight")
+            st.download_button(
+                "Download chart (PNG)",
+                data=buf2.getvalue(),
+                file_name="AverageDLI_barplot.png",
+                mime="image/png",
+                key="bar"
+            )
+
+            st.dataframe(
+                res["monthly"].style.format({
+                    "DLI Solar": "{:.1f}",
+                    "DLI AL": "{:.1f}",
+                    "Elec Cons (kWh/m2)": "{:.2f}",
+                    "Avg Daily Elec (kWh/m2/d)": "{:.2f}",
+                    "Avg AL Hours (h/d)": "{:.2f}",
+                }),
+                width="stretch"
+            )
+
+            st.download_button(
+                "Download monthly averages (CSV)",
+                data=res["monthly"].to_csv(index=False).encode("utf-8"),
+                file_name="Monthly_DLI.csv",
+                mime="text/csv",
+                key="csv"
+            )
+
+
     if st.button("Reset", type="secondary"):
         clear_results()
         st.rerun()
 
 elif page == "Info":
     info_page.render()
-
-
-# ---------- Display Output ---------- #
-
-if "error" in st.session_state:
-    st.error(f"Something went wrong: {st.session_state['error']}")
-
-if "results" in st.session_state:
-    res = st.session_state["results"]
-
-    st.pyplot(res["fig1"],  use_container_width=True)
-    buf1 = io.BytesIO()
-    res["fig1"].savefig(buf1, format="png", dpi=300, bbox_inches="tight")
-    st.download_button(
-        "Download chart (PNG)",
-        data=buf1.getvalue(),
-        file_name="AverageDLI.png",
-        mime="image/png",
-        key="png"
-    )
-
-    st.pyplot(res["fig2"],  use_container_width=True)
-    buf2 = io.BytesIO()
-    res["fig2"].savefig(buf2, format="png", dpi=300, bbox_inches="tight")
-    st.download_button(
-        "Download chart (PNG)",
-        data=buf2.getvalue(),
-        file_name="AverageDLI_barplot.png",
-        mime="image/png",
-        key="bar"
-    )
-
-    st.dataframe(
-        res["monthly"].style.format({
-            "DLI Solar": "{:.1f}",
-            "DLI AL": "{:.1f}",
-            "Elec Cons (kWh/m2)": "{:.2f}",
-            "Avg Daily Elec (kWh/m2/d)": "{:.2f}",
-            "Avg AL Hours (h/d)": "{:.2f}",
-        }),
-        width="stretch"
-    )
-
-    st.download_button(
-        "Download monthly averages (CSV)",
-        data=res["monthly"].to_csv(index=False).encode("utf-8"),
-        file_name="Monthly_DLI.csv",
-        mime="text/csv",
-        key="csv"
-    )
 
 
