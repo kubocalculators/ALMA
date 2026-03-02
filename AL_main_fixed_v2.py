@@ -3,6 +3,7 @@ import io
 import base64
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 import info_page
 
 from growlights_fixed_v2 import LED_usage, Hybrid_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
@@ -269,6 +270,7 @@ if page == "Calculator":
 
 elif page == "Info":
     info_page.render()
+
 elif page == "Crop Data":
     st.header("Crop Data")
     pdf_path = "Productsheets.pdf"
@@ -276,15 +278,17 @@ elif page == "Crop Data":
         pdf_bytes = f.read()
     # Display PDF inline
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    pdf_display = f"""
-    <iframe
-        src="data:application/pdf;base64,{base64_pdf}"
-        width="100%"
-        height="800"
-        style="border: none;"
-    ></iframe>
-    """
-    st.markdown(pdf_display, unsafe_allow_html=True)
+    components.html(
+        f"""
+        <iframe
+            src="data:application/pdf;base64,{base64_pdf}"
+            width="100%"
+            height="800"
+            style="border:none;"
+        ></iframe>
+        """,
+        height=820,
+    )
 
 # ---------- Display Output ---------- #
 
