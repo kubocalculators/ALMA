@@ -5,7 +5,7 @@ If the user selects "info" in the side bar, the following inforamtion will be di
 import streamlit as st
 
 def render():
-    st.set_page_config(layout="wide")
+
     st.title("How This Calculator Works")
 
     st.markdown("""
@@ -75,3 +75,4 @@ def render():
     The number of hours required to meet the target DLI is compared to the number of hours AL is allowed to be one by Step 1 Checkpoint. The lower threshold is taken as the maximum
     and a cumulative counter disallows artificial lighting when the daily maximum has been reached.
     """)
+
