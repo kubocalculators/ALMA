@@ -1,9 +1,6 @@
-
 import io
-import base64
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 import info_page
 
 from growlights_fixed_v2 import LED_usage, Hybrid_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
@@ -15,7 +12,7 @@ months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct
 # - Added information page showing the hourly decisions to turn lights on/off
 # - Limited decimal places displayed to match allowed step sizes
 # - Commented out the U-value inputs and requirements to the calcualtion. It complicates the input and is not considered in the output.
-# - Added pdf viewer of crop data
+# - Added pdf download button for crop data
 # - Re-arranged inputs for LED/Hybrid inputs to be at the top (I thought it was clearer to have target AL intensity closer to target DLI)
 
 # --- Default U-value data as placeholders in case if we choose to use the energy data and re-include the inputs
@@ -121,7 +118,7 @@ def load_weather(uploaded) -> pd.DataFrame:
 
 st.sidebar.title("Navigation")
 
-page = st.sidebar.radio("Go to:", ["Calculator","Info", "Crop Data"], index=0)
+page = st.sidebar.radio("Go to:", ["Calculator","Info"], index=0)
 
 if page == "Calculator":
     # ---------- Main Page ---------- #
@@ -134,6 +131,15 @@ if page == "Calculator":
         uploaded = st.file_uploader("Upload weather Excel (https://ksgclimatedata.streamlit.app/)", type=["xlsx"])
 
         st.header("Crop / Project Parameters")
+
+        with open("Productsheets.pdf", "rb") as f:
+            st.download_button(
+                "Open Crop Data PDF",
+                f,
+                file_name="Productsheets.pdf",
+                mime="application/pdf"
+            )    
+
         start = st.number_input("Start hour", min_value=0, max_value=23, value=5, step=1)
         photoperiod = st.number_input("Photoperiod (h)", min_value=1, max_value=24, value=16, step=1)
 
@@ -271,24 +277,6 @@ if page == "Calculator":
 elif page == "Info":
     info_page.render()
 
-elif page == "Crop Data":
-    st.header("Crop Data")
-    pdf_path = "Productsheets.pdf"
-    with open(pdf_path, "rb") as f:
-        pdf_bytes = f.read()
-    # Display PDF inline
-    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    components.html(
-        f"""
-        <iframe
-            src="data:application/pdf;base64,{base64_pdf}"
-            width="100%"
-            height="800"
-            style="border:none;"
-        ></iframe>
-        """,
-        height=820,
-    )
 
 # ---------- Display Output ---------- #
 
