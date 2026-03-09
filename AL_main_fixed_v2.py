@@ -192,7 +192,7 @@ if page == "Calculator":
         # screen_2_energy_pct = st.number_input("Screen 2 energy saving (%)", min_value=0.0, max_value=100.0, value=47.0, step=1.0)
         screen_2_lower_limit = st.number_input("Screen 2 lower radiation limit (W/m²)", min_value=0.0, value=550.0, step=10.0, format="%.0f")
         screen_2_upper_limit = st.number_input("Screen 2 upper radiation limit (W/m²)", min_value=0.0, value=600.0, step=10.0, format="%.0f")
-        use_temp_influence_screen2 = st.checkbox("Use Tout influence for Screen 2 (force closed when T_out < Tout_influence)", value=True)
+        use_temp_influence_screen2 = st.checkbox("Use Tout influence for Screen 2 (force closed when T_out < Tout_influence)", value=False)
 
         run = st.form_submit_button("Calculate")
 
