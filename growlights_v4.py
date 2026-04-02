@@ -140,7 +140,7 @@ def _validate_weather_df(weather: pd.DataFrame) -> pd.DataFrame:
     if out[["Year", "Month", "Day", "Hour"]].isna().any().any():
         # Some exports include header/preamble rows; drop them.
         out = out.dropna(subset=["Year", "Month", "Day", "Hour"]).copy()
-    out["Temp"] = out["Temp"].fillna(method="ffill").fillna(method="bfill")
+    out["Temp"] = out["Temp"].ffill().bfill()
 
     # Sort like Excel (important for cumulative hour allocation)
     out = out.sort_values(["Year", "Month", "Day", "Hour"]).reset_index(drop=True)
