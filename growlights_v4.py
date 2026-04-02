@@ -221,7 +221,7 @@ def AL_intensity_needed(
 
     # --- Step 3: Iteratively determine daily intensity target to ensure DLI and photoperiod are reached simultaneously
     key = ["Year", "Month", "Day"]
-    w["IntensityTarget_daily"] = 0                                                          # Initialize the daily target column
+    w["IntensityTarget_daily"] = 0.0                                                          # Initialize the daily target column
 
     for _, day_data in w.groupby(key):
         # day_data is a DataFrame containing all columns for just one day
