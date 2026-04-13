@@ -1,9 +1,9 @@
 
 import io
 import streamlit as st
-import info_page_v2
+import info_page_v3
 
-from growlights_v4 import AL_intensity_needed, AL_intensity_matrix, LED_usage, LED_dimmable_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
+from growlights_v5 import AL_intensity_needed, AL_intensity_matrix, LED_usage, LED_dimmable_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
 from alma_helpers_v2 import call_crop_lightSetpoints, clear_results, _normalize_columns, format_weather_from_alma_workbook, format_weather_from_ksgclimatedata, load_weather
 
 months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec")
@@ -13,6 +13,11 @@ months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct
 # - Two usage calculation methods:
 #       METHOD 1: Traditional AlMA (strict DLI, shorten photoperiod, lights On/Off)
 #       METHOD 2: Dimmable (strict DLI, strict photoperiod, lights dimmable)
+### Changes from v6 ###
+# - Reworded some inputs to be accurate to function (Tout influence)
+# - Updated connection to growlights_v5.py which improves the speed of AL intensity calculation
+# - screen library available on info page (v3)
+# - updated alma_helpers_v2 to be compatible with the new Crop Data information
 
 # - Other pages updated for main_v6
 #       info_page -> info_page_v2
@@ -36,9 +41,11 @@ crop_list = [
     "CUCUMBER - LONG ENGLISH, traditional",
     "CUCUMBER - SNACK/MINI, high wire",
     "CUCUMBER - SNACK/MINI, traditional",
-    "STRAWBERRY",
+    "ROSES",
+    "STRAWBERRY - EVERBEARING",
+    "STRAWBERRY - JUNE BEARING",
     "LETTUCE, baby leaf",
-    "LETTUCE, teen leaf (direct seeding)",
+    "LETTUCE, baby/teen leaf (direct seeding)",
     "LETTUCE, teen leaf (transplanted)",
     "LETTUCE, whole head (medium)",
     "LETTUCE, whole head (large)",
@@ -75,14 +82,14 @@ if page == "Calculator":
     st.header("Step 1: Enter Crop Specifications")
     
     crop_name = st.selectbox(":red[**Select Crop**]", crop_list)
-    reference, variety, day_max_temp,  night_max_temp, DLI_min_molm2, DLI_max_molm2, photoperiod = call_crop_lightSetpoints(crop_name)
+    reference, variety, day_max_temp,  night_max_temp, DLI_min_molm2, DLI_max_molm2, photoperiod, DLI_op_molm2 = call_crop_lightSetpoints(crop_name)
     
     st.caption("If data is available, crop setpoints will populate with crop selection")
     photoperiod = st.number_input("Photoperiod (h)", value=photoperiod)
 
     st.caption("Lamp intensity will be calculated for each DLI and displayed in a table of percentiles.")
     dli_min = st.number_input("Minimum DLI (mol/m2/day)", value=DLI_min_molm2)
-    dli_op = st.number_input(":red[**Optimal DLI (mol/m2/day)**]")
+    dli_op = st.number_input("Optimal DLI (mol/m2/day)", value=DLI_op_molm2)
     dli_max = st.number_input("Maximum DLI (mol/m²/day)", value=DLI_max_molm2)
 
     st.caption("Artificial lighting will not be allowed for outside temperatures higher than these setpoints.")
@@ -105,18 +112,20 @@ if page == "Calculator":
 
         trans_roof = st.number_input("Roof transmission (0-1)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
         nr_screens = st.number_input("Number of screens", min_value=0, max_value=2, value=2, step=1)
-        Tout_influence = st.number_input("Force Screen 2 closed at Temp (C)", value=-1.0, step=0.5, format="%.1f")
-        use_temp_influence_screen2 = st.checkbox("Use Tout influence for Screen 2 (force closed when T_out < Tout_influence)", value=True)
+        Tout_influence = st.number_input("Force Screens closed at Temp (C)", value=-1.0, step=0.5, format="%.1f")
+        use_temp_influence_screen2 = st.checkbox("Use Tout influence for Screen 2 as well (force closed when T_out < Tout_influence)", value=False)
 
         st.subheader("Screen 1")
+        st.caption("For common screen shading percentages, see the Info tab.")
         screen_1_shading_pct = st.number_input(":red[**Screen 1 shading (%)**]", min_value=0.0, max_value=100.0, value=13.0, step=1.0, format="%.0f")
-        screen_1_lower_limit = st.number_input("Screen 1 lower radiation limit (W/m²)", min_value=0.0, value=450.0, step=10.0, format="%.0f")
-        screen_1_upper_limit = st.number_input("Screen 1 upper radiation limit (W/m²)", min_value=0.0, value=550.0, step=10.0, format="%.0f")
+        screen_1_lower_limit = st.number_input("Screen 1 lower radiation limit (W/m²)", min_value=0.0, value=600.0, step=10.0, format="%.0f")
+        screen_1_upper_limit = st.number_input("Screen 1 upper radiation limit (W/m²)", min_value=0.0, value=700.0, step=10.0, format="%.0f")
 
         st.subheader("Screen 2")
+        st.caption("For common screen shading percentages, see the Info tab.")
         screen_2_shading_pct = st.number_input(":red[**Screen 2 shading (%)**]", min_value=0.0, max_value=100.0, value=20.0, step=1.0, format="%.0f")
-        screen_2_lower_limit = st.number_input("Screen 2 lower radiation limit (W/m²)", min_value=0.0, value=550.0, step=10.0, format="%.0f")
-        screen_2_upper_limit = st.number_input("Screen 2 upper radiation limit (W/m²)", min_value=0.0, value=600.0, step=10.0, format="%.0f")
+        screen_2_lower_limit = st.number_input("Screen 2 lower radiation limit (W/m²)", min_value=0.0, value=750.0, step=10.0, format="%.0f")
+        screen_2_upper_limit = st.number_input("Screen 2 upper radiation limit (W/m²)", min_value=0.0, value=850.0, step=10.0, format="%.0f")
 
         run_intensity = st.form_submit_button("Calculate")
 
@@ -162,7 +171,13 @@ if page == "Calculator":
             weather_addIntensity_maxDLI
         )
 
-        st.dataframe(intensity_table, hide_index=True)
+        # Save results to session state to keep from clearing / re-uploading in Step 3
+        st.session_state["intensity_results"] = intensity_table
+        st.session_state["weather_data"] = weather
+
+    # Display resulsts (persistent)
+    if "intensity_results" in st.session_state:
+        st.dataframe(st.session_state["intensity_results"], hide_index=True)
 
     # ---------- Step 3: AlMA Calculator - Monthly Usage ---------- #
     
@@ -292,5 +307,5 @@ if page == "Calculator":
         st.rerun()
 
 elif page == "Info":
-    info_page_v2.render()
+    info_page_v3.render()
 
