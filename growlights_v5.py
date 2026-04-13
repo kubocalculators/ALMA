@@ -234,8 +234,7 @@ def AL_intensity_needed(
 ):
 
     w = _validate_weather_df(weather)
-    w["IntensityTarget_daily"] = 0.0  # Initializing as 0.0 forces the column to be float64
-    
+       
     # --- Step 1: Mark hours where AL are allowed to be ON
     window_ok = (w["Hour"] >= start) & ((start + photoperiod) > w["Hour"])              # J: photoperiod window
     sr_ok = w["Isun"] < rad_setpoint                                                        # K: SR influence (Yes if Isun < rad_setpoint)
@@ -249,8 +248,9 @@ def AL_intensity_needed(
 
     # --- Step 3: Iteratively determine daily intensity target to ensure DLI and photoperiod are reached simultaneously
     key = ["Year", "Month", "Day"]
-    w["IntensityTarget_daily"] = 0                                                          # Initialize the daily target column
-
+    w["IntensityTarget_daily"] = 0.0                                                          # Initialize the daily target column
+    w["IntensityTarget_daily"] = w["IntensityTarget_daily"].astype(float)
+    
     for _, day_data in w.groupby(key):
         # day_data is a DataFrame containing all columns for just one day
         
