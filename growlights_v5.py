@@ -234,7 +234,8 @@ def AL_intensity_needed(
 ):
 
     w = _validate_weather_df(weather)
-
+    w["IntensityTarget_daily"] = 0.0  # Initializing as 0.0 forces the column to be float64
+    
     # --- Step 1: Mark hours where AL are allowed to be ON
     window_ok = (w["Hour"] >= start) & ((start + photoperiod) > w["Hour"])              # J: photoperiod window
     sr_ok = w["Isun"] < rad_setpoint                                                        # K: SR influence (Yes if Isun < rad_setpoint)
