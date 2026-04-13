@@ -58,6 +58,8 @@ def call_crop_lightSetpoints(crop_name):
     return reference, variety, day_max_temp,  night_max_temp, DLI_min_molm2, DLI_max_molm2, photoperiod, DLI_op_molm2
 
 def clear_results():
+    if "intensity_results" in st.session_state:
+        del st.session_state["intensity_results"]
     for k in ("results", "error"):
         st.session_state.pop(k, None)
 
