@@ -202,8 +202,15 @@ if page == "Calculator":
             run_AlMA = st.form_submit_button("Calculate")
 
     if run_AlMA:
-        
-        weather = load_weather(uploaded)
+
+        if "weather_data" in st.session_state:
+            weather = st.session_state["weather_data"]
+        else:
+            if uploaded is not None:
+                weather = load_weather(uploaded)
+            else:
+                st.error("Please upload weather data and run Step 2 first.")
+                st.stop()
 
         # Screen Parameters
         sp = ScreenParams(
