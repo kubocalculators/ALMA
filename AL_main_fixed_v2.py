@@ -1,6 +1,7 @@
 
 import io
 import streamlit as st
+import pandas as pd
 import info_page_v3
 
 from growlights_v5 import AL_intensity_needed, AL_intensity_matrix, LED_usage, LED_dimmable_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
@@ -18,13 +19,6 @@ months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct
 # - Updated connection to growlights_v5.py which improves the speed of AL intensity calculation
 # - screen library available on info page (v3)
 # - updated alma_helpers_v2 to be compatible with the new Crop Data information
-
-# - Other pages updated for main_v6
-#       info_page -> info_page_v2
-#       alma_helpers -> alma_helpers_v2
-#       growlights_fixed_v2 -> growlights_v4
-
-
 
 
 # --- Default U-value data as placeholders in case if we choose to use the energy data and re-include the inputs
@@ -85,16 +79,17 @@ if page == "Calculator":
     reference, variety, day_max_temp,  night_max_temp, DLI_min_molm2, DLI_max_molm2, photoperiod, DLI_op_molm2 = call_crop_lightSetpoints(crop_name)
     
     st.caption("If data is available, crop setpoints will populate with crop selection")
-    photoperiod = st.number_input("Photoperiod (h)", value=photoperiod)
+    photoperiod = st.number_input("Photoperiod (h)", value=photoperiod, key="photoperiod")
 
     st.caption("Lamp intensity will be calculated for each DLI and displayed in a table of percentiles.")
-    dli_min = st.number_input("Minimum DLI (mol/m2/day)", value=DLI_min_molm2)
-    dli_op = st.number_input("Optimal DLI (mol/m2/day)", value=DLI_op_molm2)
-    dli_max = st.number_input("Maximum DLI (mol/m²/day)", value=DLI_max_molm2)
+    dli_min = st.number_input("Minimum DLI (mol/m2/day)", value=DLI_min_molm2, key="dli_min_val")
+    dli_op = st.number_input("Optimal DLI (mol/m2/day)", value=DLI_op_molm2, key="dli_op_val")
+    dli_max = st.number_input("Maximum DLI (mol/m²/day)", value=DLI_max_molm2, key="dli_max_val")
 
-    st.caption("Artificial lighting will not be allowed for outside temperatures higher than these setpoints.")
-    day_temp_setpoint = st.number_input("Day temp setpoint (°C)", value=day_max_temp)
-    night_temp_setpoint = st.number_input("Night temp setpoint (°C)", value=night_max_temp)
+    with st.expander("Optional: Adjust Day/Night Temperature Setpoints", expanded=False):
+        st.caption("Artificial lighting will not be allowed for outside temperatures higher than these setpoints.")
+        day_temp_setpoint = st.number_input("Day temp setpoint (°C)", value=day_max_temp)
+        night_temp_setpoint = st.number_input("Night temp setpoint (°C)", value=night_max_temp)
 
     # ---------- Step 2: Determining the AL Intensity ---------- #
 
@@ -102,30 +97,30 @@ if page == "Calculator":
         st.header("Step 2: Determine AL Intensity")
         st.caption("Using DLI and photoperiod, required lamp intensity is calculated. From the results, select an intensity to use in the next section of the calculator.")
 
-        st.caption("Artificial lighting will not be allowed before this hour (24:00)")
-        start = st.number_input("Start hour", min_value=0, max_value=23, value=5, step=1)
-        st.caption("Artificial lighting will not be allowed for outside radiation above this Radiation setpoint:")
-        rad_setpoint = st.number_input("Radiation setpoint (W/m²)", min_value=0.0, value=400.0, step=10.0, format="%.0f")
         st.caption("Optional: month window where AL is disabled (Excel L3..M3). Set to 0 to disable.")
         al_off_start_month = st.number_input("AL off start month", min_value=0, max_value=12, value=0, step=1)
         al_off_end_month = st.number_input("AL off end month", min_value=0, max_value=12, value=0, step=1)
 
-        trans_roof = st.number_input("Roof transmission (0-1)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
-        nr_screens = st.number_input("Number of screens", min_value=0, max_value=2, value=2, step=1)
-        Tout_influence = st.number_input("Force Screens closed at Temp (C)", value=-1.0, step=0.5, format="%.1f")
-        use_temp_influence_screen2 = st.checkbox("Use Tout influence for Screen 2 as well (force closed when T_out < Tout_influence)", value=False)
+        with st.expander("Optional: Adjust advanced settings", expanded=False):
+            st.caption("Artificial lighting will not be allowed before this hour (24:00)")
+            start = st.number_input("Start hour", min_value=0, max_value=23, value=5, step=1)
+            st.caption("Artificial lighting will not be allowed for outside radiation above this Radiation setpoint:")
+            rad_setpoint = st.number_input("Radiation setpoint (W/m²)", min_value=0.0, value=400.0, step=10.0, format="%.0f")
 
-        st.subheader("Screen 1")
-        st.caption("For common screen shading percentages, see the Info tab.")
-        screen_1_shading_pct = st.number_input(":red[**Screen 1 shading (%)**]", min_value=0.0, max_value=100.0, value=13.0, step=1.0, format="%.0f")
-        screen_1_lower_limit = st.number_input("Screen 1 lower radiation limit (W/m²)", min_value=0.0, value=600.0, step=10.0, format="%.0f")
-        screen_1_upper_limit = st.number_input("Screen 1 upper radiation limit (W/m²)", min_value=0.0, value=700.0, step=10.0, format="%.0f")
+            trans_roof = st.number_input("Roof transmission (0-1)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
+            nr_screens = st.number_input("Number of screens", min_value=0, max_value=2, value=2, step=1)
+            Tout_influence = st.number_input("Force Screens closed at Temp (C)", value=-1.0, step=0.5, format="%.1f")
+            use_temp_influence_screen2 = st.checkbox("Use Tout influence for Screen 2 as well (force closed when T_out < Tout_influence)", value=False)
 
-        st.subheader("Screen 2")
         st.caption("For common screen shading percentages, see the Info tab.")
-        screen_2_shading_pct = st.number_input(":red[**Screen 2 shading (%)**]", min_value=0.0, max_value=100.0, value=20.0, step=1.0, format="%.0f")
-        screen_2_lower_limit = st.number_input("Screen 2 lower radiation limit (W/m²)", min_value=0.0, value=750.0, step=10.0, format="%.0f")
-        screen_2_upper_limit = st.number_input("Screen 2 upper radiation limit (W/m²)", min_value=0.0, value=850.0, step=10.0, format="%.0f")
+        screen_1_shading_pct = st.number_input(":red[**Screen 1 shading (%)**]", min_value=0.0, max_value=100.0, value=13.0, step=1.0, format="%.0f", key="scr1_shade")
+        screen_2_shading_pct = st.number_input(":red[**Screen 2 shading (%)**]", min_value=0.0, max_value=100.0, value=20.0, step=1.0, format="%.0f", key="scr2_shade")
+
+        with st.expander("Optional: Adjust lower/upper radiation limits for screen position control", expanded=False):
+            screen_1_lower_limit = st.number_input("Screen 1 lower radiation limit (W/m²)", min_value=0.0, value=600.0, step=10.0, format="%.0f")
+            screen_1_upper_limit = st.number_input("Screen 1 upper radiation limit (W/m²)", min_value=0.0, value=700.0, step=10.0, format="%.0f")
+            screen_2_lower_limit = st.number_input("Screen 2 lower radiation limit (W/m²)", min_value=0.0, value=750.0, step=10.0, format="%.0f")
+            screen_2_upper_limit = st.number_input("Screen 2 upper radiation limit (W/m²)", min_value=0.0, value=850.0, step=10.0, format="%.0f")
 
         run_intensity = st.form_submit_button("Calculate")
 
@@ -165,17 +160,23 @@ if page == "Calculator":
         weather_addIntensity_maxDLI = AL_intensity_needed(weather, start, photoperiod, rad_setpoint, day_temp_setpoint, al_off_start_month, al_off_end_month, dli_max)
 
         # Calculation 3 - Generate and display AL Intensity Table
+      
         intensity_table = AL_intensity_matrix(
             weather_addIntensity_minDLI,
             weather_addIntensity_optimalDLI,
-            weather_addIntensity_maxDLI
+            weather_addIntensity_maxDLI,
         )
+        intensity_table.columns = [
+            f"Min ({dli_min} mol/m2/day)",
+            f"Optimal ({dli_op} mol/m2/day)",
+            f"Max ({dli_max} mol/m2/day)"
+        ]
 
         # Save results to session state to keep from clearing / re-uploading in Step 3
         st.session_state["intensity_results"] = intensity_table
         st.session_state["weather_data"] = weather
 
-    # Display resulsts (persistent)
+    # Display results (persistent)
     if "intensity_results" in st.session_state:
         st.dataframe(st.session_state["intensity_results"], hide_index=True)
 
@@ -188,8 +189,8 @@ if page == "Calculator":
         with st.form("LED_monthly_usage", clear_on_submit=False):
             st.caption("Enter your chosen target intensity (unmol/m2/s). AlMA will calculate monthly usage. Photoperiod may be shorter than selected value if lights reach DLI before the photoperiod is up.")
 
-            dli_target = st.number_input(":red[**Target DLI (mol/m²/day)**]", format="%.0f")
-            al_intensity = st.number_input(":red[**AL intensity (µmol/m²/s)**]", min_value=0.0, step=10.0, format="%.0f")
+            dli_target = st.number_input(":red[**Target DLI (mol/m²/day)**]", format="%.0f", key="selected_dli")
+            al_intensity = st.number_input(":red[**AL intensity (µmol/m²/s)**]", min_value=0.0, step=10.0, format="%.0f", key="selected_intensity")
             led_eff = st.number_input("LED efficiency (µmol/J)", min_value=0.01, value=3.6, step=0.1, format="%.1f")
 
             run_AlMA = st.form_submit_button("Calculate")
@@ -197,8 +198,8 @@ if page == "Calculator":
     elif system == "LED (Dimmable, Fixed DLI & Photoperiod)":
         with st.form("LED_dimmable_monthly_usage", clear_on_submit=False):
             st.caption("Enter your chosen DLI target. Photoperiod remains the same as input above. Hourly electrical consumption is based on intensity needed rather than lamp maximum.")
-            dli_target = st.number_input(":red[**Target DLI (mol/m²/day)**]", format="%.0f")
-            led_eff = st.number_input("LED efficiency (µmol/J)", min_value=0.01, value=3.6, step=0.1, format="%.1f")
+            dli_target = st.number_input(":red[**Target DLI (mol/m²/day)**]", format="%.0f", key="selected_dli")
+            led_eff = st.number_input("LED efficiency (µmol/J)", min_value=0.01, value=3.6, step=0.1, format="%.1f", key="selected_efficiency")
             run_AlMA = st.form_submit_button("Calculate")
 
     if run_AlMA:
@@ -259,6 +260,7 @@ if page == "Calculator":
         if "results" in st.session_state:
             res = st.session_state["results"]
 
+        # Plot graph outputs
         st.pyplot(res["fig1"],  use_container_width=True)
         buf1 = io.BytesIO()
         res["fig1"].savefig(buf1, format="png", dpi=300, bbox_inches="tight")
@@ -281,6 +283,7 @@ if page == "Calculator":
             key="bar"
         )
 
+        # Monthly Data
         st.dataframe(
             res["monthly"].style.format({
                 "DLI Solar": "{:.1f}",
@@ -301,6 +304,28 @@ if page == "Calculator":
             key="csv_monthly"
         )
 
+        # Summary of Inputs
+        summary_data = {
+            "Parameter": [
+                "Target DLI",
+                "Target Intensity",
+                "Photoperiod",
+                "Screen 1 Shading",
+                "Screen 2 Shading"
+            ],
+            "Value": [
+                f"{st.session_state.selected_dli} mol/m²/day",
+                f"{st.session_state.selected_intensity} µmol/m²/s",
+                f"{st.session_state.photoperiod} h",
+                f"{st.session_state.scr1_shade}%",
+                f"{st.session_state.scr2_shade}%"
+            ]
+        }
+        summary_df = pd.DataFrame(summary_data)
+        summary_df.set_index("Parameter", inplace=True)
+        st.subheader("Input Summary")
+        st.table(summary_df)
+
         st.download_button(
             "Download complete hourly data (CSV)",
             data=res["hourly_data"].to_csv(index=False).encode("utf-8"),
@@ -315,4 +340,3 @@ if page == "Calculator":
 
 elif page == "Info":
     info_page_v3.render()
-
