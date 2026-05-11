@@ -1,4 +1,5 @@
 
+
 import io
 import streamlit as st
 import pandas as pd
@@ -19,6 +20,8 @@ months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct
 # - Updated connection to growlights_v5.py which improves the speed of AL intensity calculation
 # - screen library available on info page (v3)
 # - updated alma_helpers_v2 to be compatible with the new Crop Data information
+### Changes from v7.1
+# - updated input label wording
 
 
 # --- Default U-value data as placeholders in case if we choose to use the energy data and re-include the inputs
@@ -86,7 +89,7 @@ if page == "Calculator":
     dli_op = st.number_input("Optimal DLI (mol/m2/day)", value=DLI_op_molm2, key="dli_op_val")
     dli_max = st.number_input("Maximum DLI (mol/m²/day)", value=DLI_max_molm2, key="dli_max_val")
 
-    with st.expander("Optional: Adjust Day/Night Temperature Setpoints", expanded=False):
+    with st.expander("Default Settings (Optional to Adjust): Day/Night Temperature Setpoints", expanded=False):
         st.caption("Artificial lighting will not be allowed for outside temperatures higher than these setpoints.")
         day_temp_setpoint = st.number_input("Day temp setpoint (°C)", value=day_max_temp)
         night_temp_setpoint = st.number_input("Night temp setpoint (°C)", value=night_max_temp)
@@ -97,11 +100,11 @@ if page == "Calculator":
         st.header("Step 2: Determine AL Intensity")
         st.caption("Using DLI and photoperiod, required lamp intensity is calculated. From the results, select an intensity to use in the next section of the calculator.")
 
-        st.caption("Optional: month window where AL is disabled (Excel L3..M3). Set to 0 to disable.")
-        al_off_start_month = st.number_input("AL off start month", min_value=0, max_value=12, value=0, step=1)
-        al_off_end_month = st.number_input("AL off end month", min_value=0, max_value=12, value=0, step=1)
+        st.caption("Optional: month window where growlights are disabled (Excel L3..M3). Jan = 1, Feb = 2, etc. Set to 0 to disable.")
+        al_off_start_month = st.number_input("Blackout start month", min_value=0, max_value=12, value=0, step=1)
+        al_off_end_month = st.number_input("Blackout end month", min_value=0, max_value=12, value=0, step=1)
 
-        with st.expander("Optional: Adjust advanced settings", expanded=False):
+        with st.expander("Default Settings (Optional to Adjust)", expanded=False):
             st.caption("Artificial lighting will not be allowed before this hour (24:00)")
             start = st.number_input("Start hour", min_value=0, max_value=23, value=5, step=1)
             st.caption("Artificial lighting will not be allowed for outside radiation above this Radiation setpoint:")
@@ -116,7 +119,7 @@ if page == "Calculator":
         screen_1_shading_pct = st.number_input(":red[**Screen 1 shading (%)**]", min_value=0.0, max_value=100.0, value=13.0, step=1.0, format="%.0f", key="scr1_shade")
         screen_2_shading_pct = st.number_input(":red[**Screen 2 shading (%)**]", min_value=0.0, max_value=100.0, value=20.0, step=1.0, format="%.0f", key="scr2_shade")
 
-        with st.expander("Optional: Adjust lower/upper radiation limits for screen position control", expanded=False):
+        with st.expander("Default Settings (Optional to Adjust): Lower/Upper radiation limits for screen position control", expanded=False):
             screen_1_lower_limit = st.number_input("Screen 1 lower radiation limit (W/m²)", min_value=0.0, value=600.0, step=10.0, format="%.0f")
             screen_1_upper_limit = st.number_input("Screen 1 upper radiation limit (W/m²)", min_value=0.0, value=700.0, step=10.0, format="%.0f")
             screen_2_lower_limit = st.number_input("Screen 2 lower radiation limit (W/m²)", min_value=0.0, value=750.0, step=10.0, format="%.0f")
