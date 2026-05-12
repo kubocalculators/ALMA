@@ -318,7 +318,7 @@ if page == "Calculator":
             ],
             "Value": [
                 f"{st.session_state.selected_dli} mol/m²/day",
-                f"{st.session_state.selected_intensity} µmol/m²/s",
+                f"{st.session_state.get('selected_intensity', 'variable')} µmol/m²/s",
                 f"{st.session_state.photoperiod} h",
                 f"{st.session_state.scr1_shade}%",
                 f"{st.session_state.scr2_shade}%"
