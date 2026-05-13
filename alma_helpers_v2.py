@@ -7,6 +7,7 @@ import streamlit as st
 # Update since v1
 # - call_crop_lightSetpoints now returns DLI min and max rather than calculating an average
 # - load_weather removes days that are less than 24 h long (missing data)
+# - (v2.1) add update_crop function which will keep climate parameters as session_state variables
 
 def call_crop_lightSetpoints(crop_name):
     
@@ -15,14 +16,12 @@ def call_crop_lightSetpoints(crop_name):
     # Raise an error if the file has been changed and therefore cannot be referenced
     required = [
         "Crop",
-        "Reference",
-        "Variety",
         "Day_Temp_Max (degC)",
         "Night_Temp_Max (deg C)",
-        "Daylength_Min (h)",
-        "Daylength_Max (h)",
+        "Daylength_Optimal (h)",
         "DLI_min (mol/m2)",
-        "DLI_max (mol/m2)"
+        "DLI_max (mol/m2)",
+        "DLI_optimal (mol/m2)"
         ]
     missing = [c for c in required if c not in crop_df.columns]
     if missing:
@@ -33,33 +32,37 @@ def call_crop_lightSetpoints(crop_name):
     row = crop_df.loc[crop_name]
 
     # Function that returns None if the Excel database is missing that data
-    def nan_to_none(x):
-        return None if pd.isna(x) else x
+    def nan_to_default(x, default=0.0):
+        return default if pd.isna(x) else x
     
     # Retrieve values from that row
-    reference = nan_to_none(row["Reference"])
-    variety = nan_to_none(row["Variety"])
-    day_max_temp = nan_to_none(row["Day_Temp_Max (degC)"])
-    night_max_temp = nan_to_none(row["Night_Temp_Max (deg C)"])
-    photoperiod_min = nan_to_none(row["Daylength_Min (h)"])
-    photoperiod_max = nan_to_none(row["Daylength_Max (h)"])
-    photoperiod_optimal = nan_to_none(row["Daylength_Optimal (h)"])
-    DLI_min_molm2 = nan_to_none(row["DLI_min (mol/m2)"])
-    DLI_max_molm2 = nan_to_none(row["DLI_max (mol/m2)"])
-    DLI_op_molm2 = nan_to_none(row["DLI_optimal (mol/m2)"])
-    
-    # Calculate photoperiod as average if no optimal is available
-    if photoperiod_optimal:
-        photoperiod = photoperiod_optimal
-    else:
-        photoperiod_values = [v for v in (photoperiod_min, photoperiod_max) if v is not None]
-        photoperiod = (sum(photoperiod_values) / len(photoperiod_values)) if photoperiod_values else None
+    day_max_temp = nan_to_default(row["Day_Temp_Max (degC)"])
+    night_max_temp = nan_to_default(row["Night_Temp_Max (deg C)"])
+    photoperiod = nan_to_default(row["Daylength_Optimal (h)"])
+    DLI_min_molm2 = nan_to_default(row["DLI_min (mol/m2)"])
+    DLI_max_molm2 = nan_to_default(row["DLI_max (mol/m2)"])
+    DLI_op_molm2 = nan_to_default(row["DLI_optimal (mol/m2)"])
 
-    return reference, variety, day_max_temp,  night_max_temp, DLI_min_molm2, DLI_max_molm2, photoperiod, DLI_op_molm2
+    return day_max_temp, night_max_temp, DLI_min_molm2, DLI_max_molm2, photoperiod, DLI_op_molm2
+
+def update_crop():
+    (
+        day_max_temp,
+        night_max_temp,
+        DLI_min_molm2,
+        DLI_max_molm2,
+        photoperiod,
+        DLI_op_molm2,
+    ) = call_crop_lightSetpoints(st.session_state.crop_name)
+
+    st.session_state.photoperiod = photoperiod
+    st.session_state.dli_min_val = DLI_min_molm2
+    st.session_state.dli_op_val = DLI_op_molm2
+    st.session_state.dli_max_val = DLI_max_molm2
+    st.session_state.day_max_temp = day_max_temp
+    st.session_state.night_max_temp = night_max_temp
 
 def clear_results():
-    if "intensity_results" in st.session_state:
-        del st.session_state["intensity_results"]
     for k in ("results", "error"):
         st.session_state.pop(k, None)
 
