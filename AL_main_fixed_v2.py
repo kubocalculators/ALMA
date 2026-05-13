@@ -6,7 +6,7 @@ import pandas as pd
 import info_page_v3
 
 from growlights_v5 import AL_intensity_needed, AL_intensity_matrix, LED_usage, LED_dimmable_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
-from alma_helpers_v2 import call_crop_lightSetpoints, clear_results, _normalize_columns, format_weather_from_alma_workbook, format_weather_from_ksgclimatedata, load_weather
+from old.alma_helpers_v2 import call_crop_lightSetpoints, update_crop, clear_results, load_weather
 
 months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec")
 
@@ -71,28 +71,28 @@ if page == "Calculator":
 
     st.title("Grow Lights - Monthly DLI")
 
-    # system = st.radio(":red[**Choose system**]", ["LED", "Hybrid (LED + HPS)"], index=0, key="system", on_change=lambda: st.session_state.pop("results", None))
-
     uploaded = st.file_uploader(":red[**Upload weather data (Excel file)**] (https://ksgclimatedata.streamlit.app/)", type=["xlsx"])
 
     # Select Crop and Retreive Crop Data
     st.header("Step 1: Enter Crop Specifications")
     
-    crop_name = st.selectbox(":red[**Select Crop**]", crop_list)
-    reference, variety, day_max_temp,  night_max_temp, DLI_min_molm2, DLI_max_molm2, photoperiod, DLI_op_molm2 = call_crop_lightSetpoints(crop_name)
-    
+    crop_name = st.selectbox(":red[**Select Crop**]", crop_list, key="crop_name", on_change=update_crop)
+    # This avoids an error (missing key) when app first starts since update_crop runs "on change"
+    if "photoperiod" not in st.session_state:
+        update_crop()
+
     st.caption("If data is available, crop setpoints will populate with crop selection")
-    photoperiod = st.number_input("Photoperiod (h)", value=photoperiod, key="photoperiod")
+    photoperiod = st.number_input("Photoperiod (h)", key="photoperiod")
 
     st.caption("Lamp intensity will be calculated for each DLI and displayed in a table of percentiles.")
-    dli_min = st.number_input("Minimum DLI (mol/m2/day)", value=DLI_min_molm2, key="dli_min_val")
-    dli_op = st.number_input("Optimal DLI (mol/m2/day)", value=DLI_op_molm2, key="dli_op_val")
-    dli_max = st.number_input("Maximum DLI (mol/m²/day)", value=DLI_max_molm2, key="dli_max_val")
+    dli_min = st.number_input("Minimum DLI (mol/m2/day)", key="dli_min_val")
+    dli_op = st.number_input("Optimal DLI (mol/m2/day)", key="dli_op_val")
+    dli_max = st.number_input("Maximum DLI (mol/m²/day)", key="dli_max_val")
 
     with st.expander("Default Settings (Optional to Adjust): Day/Night Temperature Setpoints", expanded=False):
         st.caption("Artificial lighting will not be allowed for outside temperatures higher than these setpoints.")
-        day_temp_setpoint = st.number_input("Day temp setpoint (°C)", value=day_max_temp)
-        night_temp_setpoint = st.number_input("Night temp setpoint (°C)", value=night_max_temp)
+        day_temp_setpoint = st.number_input("Day temp setpoint (°C)", key="day_max_temp")
+        night_temp_setpoint = st.number_input("Night temp setpoint (°C)", key="night_max_temp")
 
     # ---------- Step 2: Determining the AL Intensity ---------- #
 
