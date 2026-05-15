@@ -6,7 +6,7 @@ import pandas as pd
 import info_page_v3
 
 from growlights_v5 import AL_intensity_needed, AL_intensity_matrix, LED_usage, LED_dimmable_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
-from old.alma_helpers_v2 import call_crop_lightSetpoints, update_crop, clear_results, load_weather
+from alma_helpers_v3 import call_crop_lightSetpoints, update_crop, clear_results, load_weather
 
 months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec")
 
