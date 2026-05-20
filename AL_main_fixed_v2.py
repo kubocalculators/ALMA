@@ -5,8 +5,8 @@ import streamlit as st
 import pandas as pd
 import info_page_v3
 
-from growlights_v5 import AL_intensity_needed, AL_intensity_matrix, LED_usage, LED_dimmable_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
-from alma_helpers_v3 import call_crop_lightSetpoints, update_crop, clear_results, load_weather
+from growlights_v6 import AL_intensity_needed, AL_intensity_matrix, LED_usage, LED_dimmable_usage, plot_avgDLI, barplot_avgDLI, ScreenParams, compute_radiation_after_screen
+from alma_helpers_v3 import update_crop, clear_results, load_weather
 
 months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec")
 
@@ -22,6 +22,9 @@ months = ("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct
 # - updated alma_helpers_v2 to be compatible with the new Crop Data information
 ### Changes from v7.1
 # - updated input label wording
+### Updates for v8
+# - calculated daily AL intensity fixed (no longer giving very large umol/m2/s)
+# - as part of the solution to fix the daily AL intensity calculation, temperature influence to close the screen had to be removed
 
 
 # --- Default U-value data as placeholders in case if we choose to use the energy data and re-include the inputs
@@ -89,6 +92,7 @@ if page == "Calculator":
     dli_op = st.number_input("Optimal DLI (mol/m2/day)", key="dli_op_val")
     dli_max = st.number_input("Maximum DLI (mol/m²/day)", key="dli_max_val")
 
+    # No longer functional
     with st.expander("Default Settings (Optional to Adjust): Day/Night Temperature Setpoints", expanded=False):
         st.caption("Artificial lighting will not be allowed for outside temperatures higher than these setpoints.")
         day_temp_setpoint = st.number_input("Day temp setpoint (°C)", key="day_max_temp")
