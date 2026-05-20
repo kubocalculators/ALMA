@@ -224,6 +224,8 @@ def AL_intensity_needed(
         w.loc[day_data.index, "IntensityTarget_daily"] = daily_target
     
     # Calculate the hourly AL Intensity needed to reach each daily intensity target
+    #    Force the column to be a float type so it can accept numeric targets
+    w["IntensityTarget_daily"] = w["IntensityTarget_daily"].astype(float)
     w["AL_Intensity"] = (w["IntensityTarget_daily"] - w["Solar_Intensity"]).clip(lower=0).where(w["AL_Possible"], 0.0)
 
     return w
